@@ -8,8 +8,26 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 
   console.log("Acessou a rota: " + req.url);
 
-  next();
+  return next();
 });
+
+// middleware para checar se o nome da tarefa foi enviado
+function checkTask(req: Request, res: Response, next: NextFunction) {
+  if (!req.body.name) {
+    return res.status(400).json({ error: "Task name is required" });
+  }
+  return next();
+}
+
+function checkIdTask(req: Request, res: Response, next: NextFunction) {
+
+  const foundTask = task[Number(req.params.id)];
+
+  if (!foundTask) {
+    return res.status(400).json({ error: "Task does not exist" });
+  }
+  return next();
+}
 
 // listar tarefas
 
@@ -28,7 +46,7 @@ router.get("/task/:id", (req: Request, res: Response) => {
 
 // cadastrar
 
-router.post("/task", (req: Request, res: Response) => {
+router.post("/task", checkTask, (req: Request, res: Response) => {
 
   const { name } = req.body;
 
@@ -38,7 +56,7 @@ router.post("/task", (req: Request, res: Response) => {
 });
 
 // atualizar tarefa
-router.put("/task/:id", (req: Request, res: Response) => {
+router.put("/task/:id", checkTask, checkIdTask, (req: Request, res: Response) => {
 
   const {id} = req.params;
   const { name } = req.body;
@@ -49,7 +67,7 @@ router.put("/task/:id", (req: Request, res: Response) => {
 }); 
 
 // deletar tarefa
-router.delete("/task/:id", (req: Request, res: Response) => {
+router.delete("/task/:id",  checkIdTask, (req: Request, res: Response) => {
 
   const {id} = req.params;
   
